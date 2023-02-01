@@ -1,0 +1,44 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © mercy2466
+
+//@version=5
+strategy("Advanced Crypto Trading Strategy",default_qty_value = 0.0042, overlay=true)
+
+// Define Variables
+symbol = "BTCUSDT"
+timeframe = "5"
+smaLength = 9
+atrLength = 14
+rsiLength = 14
+profit_percent = 1.0/100.0
+
+// Get data
+price = request.security(symbol, timeframe, close)
+sma = ta.sma(price, smaLength)
+atr = request.security(symbol,timeframe,ta.atr(atrLength))
+rsi = ta.rsi(price, rsiLength)
+
+// Buy signal
+buySignal = ta.cross(price, sma) and rsi < 50
+
+// Sell signal
+sellSignal = price > (strategy.position_avg_price + (strategy.position_avg_price * profit_percent))
+
+// Trailing Stop
+stopPrice = strategy.position_avg_price * (1 - (atr * 0.15))
+
+// Trade management
+if (buySignal)
+    strategy.entry("Long", strategy.long, stop = stopPrice, comment = "Buy")
+
+if (sellSignal)
+    strategy.close_all(comment = "Sell")
+
+// Plot Indicators
+plot(price, color = color.blue, linewidth = 2, title = "Price")
+plot(sma, color = color.red, linewidth = 2, title = "SMA")
+plot(atr, color = color.green, linewidth = 2, title = "ATR")
+plot(rsi, color = color.orange, linewidth = 2, title = "RSI", style = plot.style_areabr)
+
+
+
